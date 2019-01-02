@@ -98,6 +98,11 @@ IB_DESIGNABLE
 @property (nonatomic, strong) IBInspectable UIColor *labelColor;
 
 /**
+ *  Color of selected label.
+ */
+@property (nonatomic, strong) IBInspectable UIColor *selectedLabelColor;
+
+/**
  *  Offset between slider and labels.
  */
 @property (nonatomic) IBInspectable CGFloat labelOffset;

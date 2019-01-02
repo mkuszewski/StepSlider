@@ -10,11 +10,11 @@
 
 #define GENERATE_SETTER(PROPERTY, TYPE, SETTER, UPDATER) \
 - (void)SETTER:(TYPE)PROPERTY { \
-    if (_##PROPERTY != PROPERTY) { \
-        _##PROPERTY = PROPERTY; \
-        UPDATER \
-        [self setNeedsLayout]; \
-    } \
+if (_##PROPERTY != PROPERTY) { \
+_##PROPERTY = PROPERTY; \
+UPDATER \
+[self setNeedsLayout]; \
+} \
 }
 
 static NSString * const kTrackAnimation = @"kTrackAnimation";
@@ -35,7 +35,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
     NSMutableArray <CAShapeLayer *> *_trackCirclesArray;
     NSMutableArray <CATextLayer *> *_trackLabelsArray;
     NSMutableDictionary <NSNumber *, UIImage *> *_trackCircleImages;
-
+    
     UIImpactFeedbackGenerator* _selectFeedback;
     
     BOOL animateLayouts;
@@ -55,11 +55,19 @@ void withoutCAAnimation(withoutAnimationBlock code)
 
 #pragma mark - Init
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        [self generalSetup];
+    }
+    return self;
+}
+
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
-        _index = 2;
         [self generalSetup];
     }
     return self;
@@ -69,7 +77,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
 {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        [self generalSetup];
+        [self addLayers];
     }
     return self;
 }
@@ -84,7 +92,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
     _trackLayer = [CAShapeLayer layer];
     _sliderCircleLayer = [CAShapeLayer layer];
     _sliderCircleLayer.contentsScale = [UIScreen mainScreen].scale;
-
+    
     [self.layer addSublayer:_sliderCircleLayer];
     [self.layer addSublayer:_trackLayer];
     
@@ -96,32 +104,17 @@ void withoutCAAnimation(withoutAnimationBlock code)
 {
     [self addLayers];
     
-    if (_maxCount == 0) {
-        _maxCount = 4;
-    }
-    if (_trackHeight == 0.f) {
-        _trackHeight = 4.f;
-    }
-    if (_trackCircleRadius == 0.f) {
-        _trackCircleRadius = 5.f;
-    }
-    if (_sliderCircleRadius == 0.f) {
-        _sliderCircleRadius = 12.5f;
-    }
-    if (_labelOffset == 0.f) {
-        _labelOffset = 20.f;
-    }
-    if (!_trackColor) {
-        _trackColor = [UIColor colorWithWhite:0.41f alpha:1.f];
-    }
-    if (!_sliderCircleColor) {
-        _sliderCircleColor = [UIColor whiteColor];
-    }
-    if (!_labelColor) {
-        _labelColor = [UIColor whiteColor];
-    }
-
+    _maxCount           = 4;
+    _index              = 2;
+    _trackHeight        = 4.f;
+    _trackCircleRadius  = 5.f;
+    _sliderCircleRadius = 12.5f;
+    _trackColor         = [UIColor colorWithWhite:0.41f alpha:1.f];
+    _sliderCircleColor  = [UIColor whiteColor];
+    _labelOffset        = 20.f;
+    _labelColor         = [UIColor whiteColor];
     [self updateMaxRadius];
+    
     [self setNeedsLayout];
 }
 
@@ -181,10 +174,10 @@ void withoutCAAnimation(withoutAnimationBlock code)
         [CATransaction begin];
         [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
     }
-
+    
     _sliderCircleLayer.path     = NULL;
     _sliderCircleLayer.contents = nil;
-
+    
     if (self.sliderCircleImage) {
         _sliderCircleLayer.frame    = CGRectMake(0.f, 0.f, fmaxf(self.sliderCircleImage.size.width, 44.f), fmaxf(self.sliderCircleImage.size.height, 44.f));
         _sliderCircleLayer.contents = (__bridge id)self.sliderCircleImage.CGImage;
@@ -198,7 +191,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
         _sliderCircleLayer.fillColor = [self.sliderCircleColor CGColor];
     }
     _sliderCircleLayer.position = CGPointMake(contentFrame.origin.x + stepWidth * self.index, CGRectGetMidY(contentFrame));
-
+    
     if (animated) {
         CABasicAnimation *basicSliderAnimation = [CABasicAnimation animationWithKeyPath:@"position"];
         basicSliderAnimation.duration = [CATransaction animationDuration];
@@ -220,7 +213,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
         basicTrackAnimation.fromValue = (__bridge id _Nullable)(oldPath);
         [_trackLayer addAnimation:basicTrackAnimation forKey:@"path"];
     }
-
+    
     
     _trackCirclesArray = [self clearExcessLayers:_trackCirclesArray];
     
@@ -231,7 +224,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
     
     NSTimeInterval animationTimeDiff = 0;
     if (indexDiff > 0) {
-        animationTimeDiff = (left ? [CATransaction animationDuration] : -[CATransaction animationDuration]) / indexDiff;   
+        animationTimeDiff = (left ? [CATransaction animationDuration] : -[CATransaction animationDuration]) / indexDiff;
     }
     NSTimeInterval animationTime = left ? animationTimeDiff : [CATransaction animationDuration] + animationTimeDiff;
     CGFloat circleAnimation      = circleFrameSide / _trackLayer.frame.size.width;
@@ -265,9 +258,14 @@ void withoutCAAnimation(withoutAnimationBlock code)
         } else {
             trackCircle.path = NULL;
         }
-
+        
         trackLabel.position        = CGPointMake(contentFrame.origin.x + stepWidth * i, labelsY);
-        trackLabel.foregroundColor = self.labelColor.CGColor;
+        
+        if (i == _index){
+            trackLabel.foregroundColor = self.selectedLabelColor.CGColor;
+        } else {
+            trackLabel.foregroundColor = self.labelColor.CGColor;
+        }
         
         if (animated) {
             if (trackCircleImage) {
@@ -448,11 +446,11 @@ void withoutCAAnimation(withoutAnimationBlock code)
 {
     startTouchPosition = [touch locationInView:self];
     startSliderPosition = _sliderCircleLayer.position;
-
+    
     if (self.enableHapticFeedback && ![[NSProcessInfo processInfo] isLowPowerModeEnabled]) {
         _selectFeedback = [[UIImpactFeedbackGenerator alloc] init];
     }
-
+    
     [_selectFeedback prepare];
     if (CGRectContainsPoint(_sliderCircleLayer.frame, startTouchPosition)) {
         return YES;
@@ -573,7 +571,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
         
         trackLabel.string = self.labels[index];
         trackLabel.bounds = CGRectMake(0.f, 0.f, size.width, size.height);
-        
+
         [self.layer addSublayer:trackLabel];
         [_trackLabelsArray addObject:trackLabel];
         
