@@ -5,6 +5,7 @@
 .Trashes
 
 # Xcode
+index/*
 build/*
 depositphotos/Build/*
 Build/*

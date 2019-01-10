@@ -259,7 +259,13 @@ void withoutCAAnimation(withoutAnimationBlock code)
             trackCircle.path = NULL;
         }
         
-        trackLabel.position        = CGPointMake(contentFrame.origin.x + stepWidth * i, labelsY);
+        if (i == 0) {
+            trackLabel.position        = CGPointMake(contentFrame.origin.x + (_sliderCircleRadius / 2.0) , labelsY);
+        } else if (i == _maxCount -1 )  {
+            trackLabel.position        = CGPointMake(contentFrame.origin.x + stepWidth * i - (_sliderCircleRadius / 2.0), labelsY);
+        } else {
+            trackLabel.position        = CGPointMake(contentFrame.origin.x + stepWidth * i  , labelsY);
+        }
         
         if (i == _index){
             trackLabel.foregroundColor = self.selectedLabelColor.CGColor;
@@ -571,7 +577,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
         
         trackLabel.string = self.labels[index];
         trackLabel.bounds = CGRectMake(0.f, 0.f, size.width, size.height);
-
+        
         [self.layer addSublayer:trackLabel];
         [_trackLabelsArray addObject:trackLabel];
         
