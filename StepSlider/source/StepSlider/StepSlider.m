@@ -31,6 +31,8 @@ void withoutCAAnimation(withoutAnimationBlock code)
 @interface StepSlider ()
 {
     CAShapeLayer *_trackLayer;
+    CAShapeLayer *_trackMaskLayer;
+    CAGradientLayer *_trackGradientLayer;
     CAShapeLayer *_sliderCircleLayer;
     NSMutableArray <CAShapeLayer *> *_trackCirclesArray;
     NSMutableArray <CATextLayer *> *_trackLabelsArray;
@@ -89,12 +91,21 @@ void withoutCAAnimation(withoutAnimationBlock code)
     _trackLabelsArray  = [[NSMutableArray alloc] init];
     _trackCircleImages = [[NSMutableDictionary alloc] init];
     
-    _trackLayer = [CAShapeLayer layer];
     _sliderCircleLayer = [CAShapeLayer layer];
     _sliderCircleLayer.contentsScale = [UIScreen mainScreen].scale;
     
     [self.layer addSublayer:_sliderCircleLayer];
+    
+    _trackLayer = [CAShapeLayer layer];
     [self.layer addSublayer:_trackLayer];
+    
+    _trackGradientLayer = [CAGradientLayer layer];
+    _trackGradientLayer.startPoint = CGPointMake(0.0, 0.5);
+    _trackGradientLayer.endPoint = CGPointMake(1.0, 0.5);
+    [self.layer addSublayer:_trackGradientLayer];
+    
+    _trackMaskLayer = [CAShapeLayer layer];
+    _trackMaskLayer.fillColor = [UIColor blackColor].CGColor;
     
     _labelFont = [UIFont systemFontOfSize:15.f];
     contentSize = self.bounds.size;
@@ -104,15 +115,17 @@ void withoutCAAnimation(withoutAnimationBlock code)
 {
     [self addLayers];
     
-    _maxCount           = 4;
-    _index              = 2;
-    _trackHeight        = 4.f;
-    _trackCircleRadius  = 5.f;
-    _sliderCircleRadius = 12.5f;
-    _trackColor         = [UIColor colorWithWhite:0.41f alpha:1.f];
-    _sliderCircleColor  = [UIColor whiteColor];
-    _labelOffset        = 20.f;
-    _labelColor         = [UIColor whiteColor];
+    _maxCount               = 4;
+    _index                  = 2;
+    _trackHeight            = 4.f;
+    _trackCircleRadius      = 5.f;
+    _sliderCircleRadius     = 12.5f;
+    _trackTintStartColor    = [UIColor blueColor];
+    _trackTintEndColor      = [UIColor yellowColor];
+    _trackColor             = [UIColor colorWithWhite:0.41f alpha:1.f];
+    _sliderCircleColor      = [UIColor whiteColor];
+    _labelOffset            = 20.f;
+    _labelColor             = [UIColor whiteColor];
     [self updateMaxRadius];
     
     [self setNeedsLayout];
@@ -166,7 +179,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
     CGFloat sliderDiameter  = self.sliderCircleRadius * 2.f;
     
     CGPoint oldPosition = _sliderCircleLayer.position;
-    CGPathRef oldPath   = _trackLayer.path;
+    CGPathRef oldPath   = _trackMaskLayer.path;
     
     CGFloat labelsY     = self.labelOrientation ? (self.bounds.size.height - totalHeight) / 2.f : (CGRectGetMaxY(contentFrame) + self.labelOffset);
     
@@ -199,21 +212,27 @@ void withoutCAAnimation(withoutAnimationBlock code)
         [_sliderCircleLayer addAnimation:basicSliderAnimation forKey:@"position"];
     }
     
-    _trackLayer.frame = CGRectMake(contentFrame.origin.x,
-                                   CGRectGetMidY(contentFrame) - self.trackHeight / 2.f,
-                                   contentFrame.size.width,
-                                   self.trackHeight);
-    _trackLayer.path            = [self fillingPath];
-    _trackLayer.backgroundColor = [self.trackColor CGColor];
-    _trackLayer.fillColor       = [self.tintColor CGColor];
+    CGRect frame = CGRectMake(contentFrame.origin.x,
+                              CGRectGetMidY(contentFrame) - self.trackHeight / 2.f,
+                              contentFrame.size.width,
+                              self.trackHeight);
+    
+    _trackLayer.path = [self trackPath];
+    _trackLayer.fillColor = [self.trackColor CGColor];
+    _trackLayer.frame = frame;
+    
+    _trackMaskLayer.path = [self fillingPath];
+    
+    _trackGradientLayer.colors = self.trackTintColors;
+    _trackGradientLayer.frame = frame;
+    [_trackGradientLayer setMask:_trackMaskLayer];
     
     if (animated) {
         CABasicAnimation *basicTrackAnimation = [CABasicAnimation animationWithKeyPath:@"path"];
         basicTrackAnimation.duration = [CATransaction animationDuration];
         basicTrackAnimation.fromValue = (__bridge id _Nullable)(oldPath);
-        [_trackLayer addAnimation:basicTrackAnimation forKey:@"path"];
+        [_trackMaskLayer addAnimation:basicTrackAnimation forKey:@"path"];
     }
-    
     
     _trackCirclesArray = [self clearExcessLayers:_trackCirclesArray];
     
@@ -259,13 +278,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
             trackCircle.path = NULL;
         }
         
-        if (i == 0) {
-            trackLabel.position        = CGPointMake(contentFrame.origin.x + (_sliderCircleRadius / 2.0) , labelsY);
-        } else if (i == _maxCount -1 )  {
-            trackLabel.position        = CGPointMake(contentFrame.origin.x + stepWidth * i - (_sliderCircleRadius / 2.0), labelsY);
-        } else {
-            trackLabel.position        = CGPointMake(contentFrame.origin.x + stepWidth * i  , labelsY);
-        }
+        trackLabel.position        = CGPointMake(contentFrame.origin.x + stepWidth * i, labelsY);
         
         if (i == _index){
             trackLabel.foregroundColor = self.selectedLabelColor.CGColor;
@@ -395,12 +408,18 @@ void withoutCAAnimation(withoutAnimationBlock code)
     }
 }
 
+- (CGPathRef)trackPath
+{
+    CGRect fillRect     = _trackLayer.bounds;
+    return [UIBezierPath bezierPathWithRoundedRect:fillRect cornerRadius:self.trackHeight * 0.5f].CGPath;
+}
+
 - (CGPathRef)fillingPath
 {
     CGRect fillRect     = _trackLayer.bounds;
     fillRect.size.width = self.sliderPosition;
     
-    return [UIBezierPath bezierPathWithRect:fillRect].CGPath;
+    return [UIBezierPath bezierPathWithRoundedRect:fillRect cornerRadius:self.trackHeight * 0.5f].CGPath;
 }
 
 - (CGFloat)sliderPosition
@@ -422,6 +441,19 @@ void withoutCAAnimation(withoutAnimationBlock code)
 {
     return self.sliderPosition + diff >= [self trackCirclePosition:trackCircle];
 }
+
+- (NSArray *)trackTintColors
+{
+    if (_trackTintStartColor != nil && _trackTintEndColor != nil) {
+        return @[(id)_trackTintStartColor.CGColor, (id)_trackTintEndColor.CGColor];
+    } else if (_trackTintStartColor != nil) {
+        return @[(id)_trackTintStartColor.CGColor];
+    } else if (_trackTintEndColor != nil) {
+        return @[(id)_trackTintEndColor.CGColor];
+    }
+    return @[];
+}
+
 
 #pragma mark - Track circle
 
@@ -494,7 +526,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
     
     withoutCAAnimation(^{
         self->_sliderCircleLayer.position = CGPointMake(limitedPosition, self->_sliderCircleLayer.position.y);
-        self->_trackLayer.path = [self fillingPath];
+        self->_trackMaskLayer.path = [self fillingPath];
         
         NSUInteger index = (self.sliderPosition + self->diff) / (self->_trackLayer.bounds.size.width / (self.maxCount - 1));
         if (self->_index != index) {
@@ -577,7 +609,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
         
         trackLabel.string = self.labels[index];
         trackLabel.bounds = CGRectMake(0.f, 0.f, size.width, size.height);
-        
+
         [self.layer addSublayer:trackLabel];
         [_trackLabelsArray addObject:trackLabel];
         
@@ -644,6 +676,8 @@ GENERATE_SETTER(index, NSUInteger, setIndex, [self updateIndex]; [self sendActio
 GENERATE_SETTER(trackHeight, CGFloat, setTrackHeight, [self updateDiff];);
 GENERATE_SETTER(trackCircleRadius, CGFloat, setTrackCircleRadius, [self updateDiff]; [self updateMaxRadius];);
 GENERATE_SETTER(trackColor, UIColor*, setTrackColor, );
+GENERATE_SETTER(trackTintStartColor, UIColor*, setTrackTintStartColor, );
+GENERATE_SETTER(trackTintEndColor, UIColor*, setTrackTintEndColor, );
 
 GENERATE_SETTER(sliderCircleRadius, CGFloat, setSliderCircleRadius, [self updateMaxRadius];);
 GENERATE_SETTER(sliderCircleColor, UIColor*, setSliderCircleColor, );

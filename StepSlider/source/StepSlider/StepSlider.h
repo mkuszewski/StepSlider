@@ -64,11 +64,20 @@ IB_DESIGNABLE
  */
 @property (nonatomic, getter=isDotsInteractionEnabled) IBInspectable BOOL dotsInteractionEnabled;
 
-
 /**
  *  Color of the slider slider.
  */
 @property (nonatomic, strong) IBInspectable UIColor *trackColor;
+
+/**
+ *  Start gradient color of the slider.
+ */
+@property (nonatomic, strong) IBInspectable UIColor *trackTintStartColor;
+
+/**
+ *  End gradient color of the slider.
+ */
+@property (nonatomic, strong) IBInspectable UIColor *trackTintEndColor;
 
 /**
  *  Color of the slider main wheel.
