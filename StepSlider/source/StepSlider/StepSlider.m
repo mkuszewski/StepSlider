@@ -150,7 +150,11 @@ void withoutCAAnimation(withoutAnimationBlock code)
     BOOL left = (roundf([self indexCalculate]) - self.index) < 0;
     
     CGFloat contentWidth = self.bounds.size.width - 2 * maxRadius;
-    CGFloat stepWidth    = contentWidth / (self.maxCount - 1);
+    CGFloat stepWidth = contentWidth;
+    
+    if (self.maxCount - 1 > 0) {
+        stepWidth /= (self.maxCount - 1);
+    }
     
     CGFloat sliderHeight = fmaxf(maxRadius, self.trackHeight / 2.f) * 2.f;
     CGFloat labelsHeight = [self labelHeightWithMaxWidth:stepWidth] + self.labelOffset;
