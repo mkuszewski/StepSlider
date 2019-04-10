@@ -50,6 +50,16 @@ IB_DESIGNABLE
 @property (nonatomic) IBInspectable CGFloat trackHeight;
 
 /**
+ *  Track graduation line width.
+ */
+@property (nonatomic) IBInspectable CGFloat stepLineWidth;
+
+/**
+ *  Left and right track line padding.
+ */
+@property (nonatomic) IBInspectable CGFloat stepLinesEdgePadding;
+
+/**
  *  Radius of the default dots on slider track.
  */
 @property (nonatomic) IBInspectable CGFloat trackCircleRadius;

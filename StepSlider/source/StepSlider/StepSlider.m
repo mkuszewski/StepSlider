@@ -7,6 +7,7 @@
 //
 
 #import "StepSlider.h"
+#import "SliderTrackLayer.h"
 
 #define GENERATE_SETTER(PROPERTY, TYPE, SETTER, UPDATER) \
 - (void)SETTER:(TYPE)PROPERTY { \
@@ -30,7 +31,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
 
 @interface StepSlider ()
 {
-    CAShapeLayer *_trackLayer;
+    SliderTrackLayer *_trackLayer;
     CAShapeLayer *_trackMaskLayer;
     CAGradientLayer *_trackGradientLayer;
     CAShapeLayer *_sliderCircleLayer;
@@ -96,7 +97,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
     
     [self.layer addSublayer:_sliderCircleLayer];
     
-    _trackLayer = [CAShapeLayer layer];
+    _trackLayer = [SliderTrackLayer layer];
     [self.layer addSublayer:_trackLayer];
     
     _trackGradientLayer = [CAGradientLayer layer];
@@ -117,12 +118,10 @@ void withoutCAAnimation(withoutAnimationBlock code)
     
     _maxCount               = 4;
     _index                  = 2;
-    _trackHeight            = 4.f;
     _trackCircleRadius      = 5.f;
     _sliderCircleRadius     = 12.5f;
     _trackTintStartColor    = [UIColor blueColor];
     _trackTintEndColor      = [UIColor yellowColor];
-    _trackColor             = [UIColor colorWithWhite:0.41f alpha:1.f];
     _sliderCircleColor      = [UIColor whiteColor];
     _labelOffset            = 20.f;
     _labelColor             = [UIColor whiteColor];
@@ -215,14 +214,11 @@ void withoutCAAnimation(withoutAnimationBlock code)
         basicSliderAnimation.fromValue = [NSValue valueWithCGPoint:(oldPosition)];
         [_sliderCircleLayer addAnimation:basicSliderAnimation forKey:@"position"];
     }
+
+    CGSize trackSize = [_trackLayer sizeThatFits:CGSizeMake(self.bounds.size.width, CGFLOAT_MAX)];
+    CGPoint origin = CGPointMake(0.0, CGRectGetMidY(contentFrame) - trackSize.height * 0.5f);
+    CGRect frame = CGRectMake(origin.x, origin.y, trackSize.width, trackSize.height);
     
-    CGRect frame = CGRectMake(contentFrame.origin.x,
-                              CGRectGetMidY(contentFrame) - self.trackHeight / 2.f,
-                              contentFrame.size.width,
-                              self.trackHeight);
-    
-    _trackLayer.path = [self trackPath];
-    _trackLayer.fillColor = [self.trackColor CGColor];
     _trackLayer.frame = frame;
     
     _trackMaskLayer.path = [self fillingPath];
@@ -412,17 +408,10 @@ void withoutCAAnimation(withoutAnimationBlock code)
     }
 }
 
-- (CGPathRef)trackPath
-{
-    CGRect fillRect     = _trackLayer.bounds;
-    return [UIBezierPath bezierPathWithRoundedRect:fillRect cornerRadius:self.trackHeight * 0.5f].CGPath;
-}
-
 - (CGPathRef)fillingPath
 {
-    CGRect fillRect     = _trackLayer.bounds;
-    fillRect.size.width = self.sliderPosition;
-    
+    CGRect fillRect = CGRectMake(0.0f, _trackLayer.bounds.size.height - self.trackHeight,
+                                 self.sliderPosition, self.trackHeight);
     return [UIBezierPath bezierPathWithRoundedRect:fillRect cornerRadius:self.trackHeight * 0.5f].CGPath;
 }
 
@@ -638,10 +627,44 @@ void withoutCAAnimation(withoutAnimationBlock code)
 
 #pragma mark - Access methods
 
+- (void)setTrackHeight:(CGFloat)trackHeight {
+    _trackLayer.trackHeight = trackHeight;
+    
+    [self updateDiff];
+}
+
+- (CGFloat)trackHeight {
+    return _trackLayer.trackHeight;
+}
+
+- (void)setStepLineWidth:(CGFloat)stepLineWidth {
+    _trackLayer.stepLineWidth = stepLineWidth;
+}
+
+- (CGFloat)stepLineWidth {
+    return _trackLayer.stepLineWidth;
+}
+
+- (void)setStepLinesEdgePadding:(CGFloat)stepLinesEdgePadding {
+    _trackLayer.stepLinesEdgePadding = stepLinesEdgePadding;
+}
+
+- (CGFloat)stepLinesEdgePadding {
+    return _trackLayer.stepLinesEdgePadding;
+}
+
 - (void)setIndex:(NSUInteger)index animated:(BOOL)animated
 {
     animateLayouts = animated;
     self.index = index;
+}
+
+- (void) setTrackColor:(UIColor *)trackColor {
+    _trackLayer.trackColor = trackColor;
+}
+
+- (UIColor *) trackColor {
+    return _trackLayer.trackColor;
 }
 
 - (void)setTintColor:(UIColor *)tintColor
@@ -659,6 +682,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
         if (_labels.count > 0) {
             _maxCount = _labels.count;
         }
+        _trackLayer.numberOfSteps = labels.count;
         
         [self updateIndex];
         [self removeLabelLayers];
@@ -677,9 +701,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
 
 GENERATE_SETTER(index, NSUInteger, setIndex, [self updateIndex]; [self sendActionsForControlEvents:UIControlEventValueChanged];);
 
-GENERATE_SETTER(trackHeight, CGFloat, setTrackHeight, [self updateDiff];);
 GENERATE_SETTER(trackCircleRadius, CGFloat, setTrackCircleRadius, [self updateDiff]; [self updateMaxRadius];);
-GENERATE_SETTER(trackColor, UIColor*, setTrackColor, );
 GENERATE_SETTER(trackTintStartColor, UIColor*, setTrackTintStartColor, );
 GENERATE_SETTER(trackTintEndColor, UIColor*, setTrackTintEndColor, );
 

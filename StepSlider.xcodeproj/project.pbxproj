@@ -18,6 +18,8 @@
 		42F0F57620DD11270046AF6D /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 42F0F57520DD11270046AF6D /* UIKit.framework */; };
 		42F0F57920DD116A0046AF6D /* StepSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 01C688741BCF995F00DB7828 /* StepSlider.m */; };
 		42F0F57C20DD16460046AF6D /* StepSlider.h in Headers */ = {isa = PBXBuildFile; fileRef = 01C688731BCF995F00DB7828 /* StepSlider.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		66E72409225DE78700600689 /* SliderTrackLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 66E72407225DE78600600689 /* SliderTrackLayer.h */; };
+		66E7240A225DE78700600689 /* SliderTrackLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 66E72408225DE78700600689 /* SliderTrackLayer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +63,8 @@
 		42F0F56A20DD111B0046AF6D /* StepSlider-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "StepSlider-Info.plist"; path = "StepSlider/StepSlider-Info.plist"; sourceTree = "<group>"; };
 		42F0F57520DD11270046AF6D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		42F0F57A20DD11DD0046AF6D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		66E72407225DE78600600689 /* SliderTrackLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SliderTrackLayer.h; sourceTree = "<group>"; };
+		66E72408225DE78700600689 /* SliderTrackLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SliderTrackLayer.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -183,6 +187,8 @@
 			children = (
 				01C688731BCF995F00DB7828 /* StepSlider.h */,
 				01C688741BCF995F00DB7828 /* StepSlider.m */,
+				66E72407225DE78600600689 /* SliderTrackLayer.h */,
+				66E72408225DE78700600689 /* SliderTrackLayer.m */,
 			);
 			path = StepSlider;
 			sourceTree = "<group>";
@@ -195,6 +201,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				42F0F57C20DD16460046AF6D /* StepSlider.h in Headers */,
+				66E72409225DE78700600689 /* SliderTrackLayer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,6 +318,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E7240A225DE78700600689 /* SliderTrackLayer.m in Sources */,
 				42F0F57920DD116A0046AF6D /* StepSlider.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
