@@ -155,9 +155,10 @@ void withoutCAAnimation(withoutAnimationBlock code)
         stepWidth /= (self.maxCount - 1);
     }
     
+    CGFloat topPadding = 10.0;
     CGFloat sliderHeight = fmaxf(maxRadius, self.trackHeight / 2.f) * 2.f;
     CGFloat labelsHeight = [self labelHeightWithMaxWidth:stepWidth] + self.labelOffset;
-    CGFloat totalHeight  = sliderHeight + labelsHeight;
+    CGFloat totalHeight  = sliderHeight + labelsHeight + topPadding;
     
     contentSize = CGSizeMake(fmaxf(44.f, self.bounds.size.width), fmaxf(44.f, totalHeight));
     if (!CGSizeEqualToSize(self.bounds.size, contentSize)) {
@@ -173,7 +174,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
     CGFloat contentFrameY = (self.bounds.size.height - totalHeight) / 2.f;
     
     if (self.labelOrientation == StepSliderTextOrientationUp && self.labels.count) {
-        contentFrameY += labelsHeight;
+        contentFrameY += labelsHeight + topPadding;
     }
     
     CGRect contentFrame = CGRectMake(maxRadius, contentFrameY, contentWidth, sliderHeight);
@@ -184,8 +185,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
     CGPoint oldPosition = _sliderCircleLayer.position;
     CGPathRef oldPath   = _trackMaskLayer.path;
     
-    CGFloat labelsY     = self.labelOrientation ? (self.bounds.size.height - totalHeight) / 2.f : (CGRectGetMaxY(contentFrame) + self.labelOffset);
-    
+    CGFloat labelsY     = self.labelOrientation ? topPadding : (CGRectGetMaxY(contentFrame) + self.labelOffset);
     if (!animated) {
         [CATransaction begin];
         [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
