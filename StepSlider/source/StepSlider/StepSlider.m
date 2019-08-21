@@ -485,29 +485,50 @@ void withoutCAAnimation(withoutAnimationBlock code)
     [_selectFeedback prepare];
     if (CGRectContainsPoint(_sliderCircleLayer.frame, startTouchPosition)) {
         return YES;
-    } else if (self.isDotsInteractionEnabled) {
-        for (NSUInteger i = 0; i < _trackCirclesArray.count; i++) {
-            CALayer *dot = _trackCirclesArray[i];
-            
-            CGFloat dotRadiusDiff = 22 - self.trackCircleRadius;
-            CGRect frameToCheck = dotRadiusDiff > 0 ? CGRectInset(dot.frame, -dotRadiusDiff, -dotRadiusDiff) : dot.frame;
-            
-            if (CGRectContainsPoint(frameToCheck, startTouchPosition)) {
-                NSUInteger oldIndex = _index;
+    } else {
+        if (self.isDotsInteractionEnabled) {
+            for (NSUInteger i = 0; i < _trackCirclesArray.count; i++) {
+                CALayer *dot = _trackCirclesArray[i];
                 
-                _index = i;
+                CGFloat dotRadiusDiff = 22 - self.trackCircleRadius;
+                CGRect frameToCheck = dotRadiusDiff > 0 ? CGRectInset(dot.frame, -dotRadiusDiff, -dotRadiusDiff) : dot.frame;
                 
-                if (oldIndex != _index) {
-                    [self sendActionsForControlEvents:UIControlEventValueChanged];
-                    [_selectFeedback impactOccurred];
-                    [_selectFeedback prepare];
+                if (CGRectContainsPoint(frameToCheck, startTouchPosition)) {
+                    NSUInteger oldIndex = _index;
+                    
+                    _index = i;
+                    
+                    if (oldIndex != _index) {
+                        [self sendActionsForControlEvents:UIControlEventValueChanged];
+                        [_selectFeedback impactOccurred];
+                        [_selectFeedback prepare];
+                    }
+                    animateLayouts = YES;
+                    [self setNeedsLayout];
+                    return NO;
                 }
-                animateLayouts = YES;
-                [self setNeedsLayout];
-                return NO;
             }
+            for (NSUInteger i = 0; i < _trackLabelsArray.count; i++) {
+                CATextLayer *textLayer = _trackLabelsArray[i];
+                CGRect frameToCheck = CGRectInset(textLayer.frame, -10.0, -10.0);
+                
+                if (CGRectContainsPoint(frameToCheck, startTouchPosition)) {
+                    NSUInteger oldIndex = _index;
+                    
+                    _index = i;
+                    
+                    if (oldIndex != _index) {
+                        [self sendActionsForControlEvents:UIControlEventValueChanged];
+                        [_selectFeedback impactOccurred];
+                        [_selectFeedback prepare];
+                    }
+                    animateLayouts = YES;
+                    [self setNeedsLayout];
+                    return NO;
+                }
+            }
+            return NO;
         }
-        return NO;
     }
     return NO;
 }
