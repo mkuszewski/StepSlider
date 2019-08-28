@@ -427,7 +427,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
 
 - (CGFloat)indexCalculate
 {
-    return self.sliderPosition / (_trackLayer.bounds.size.width / (self.maxCount - 1));
+    return self.sliderPosition / ((_trackLayer.bounds.size.width - self.sliderCircleRadius) / (self.maxCount - 1));
 }
 
 - (BOOL)trackCircleIsSeleceted:(CAShapeLayer *)trackCircle
