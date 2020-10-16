@@ -38,6 +38,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
     NSMutableArray <CAShapeLayer *> *_trackCirclesArray;
     NSMutableArray <CATextLayer *> *_trackLabelsArray;
     NSMutableDictionary <NSNumber *, UIImage *> *_trackCircleImages;
+    UIImage *_sliderCircleImage;
     
     UIImpactFeedbackGenerator* _selectFeedback;
     
@@ -94,6 +95,7 @@ void withoutCAAnimation(withoutAnimationBlock code)
     
     _sliderCircleLayer = [CAShapeLayer layer];
     _sliderCircleLayer.contentsScale = [UIScreen mainScreen].scale;
+    _sliderCircleLayer.contentsGravity = kCAGravityCenter;
     
     [self.layer addSublayer:_sliderCircleLayer];
     
@@ -192,12 +194,9 @@ void withoutCAAnimation(withoutAnimationBlock code)
     }
     
     _sliderCircleLayer.path     = NULL;
-    _sliderCircleLayer.contents = nil;
     
     if (self.sliderCircleImage) {
-        _sliderCircleLayer.frame    = CGRectMake(0.f, 0.f, fmaxf(self.sliderCircleImage.size.width, 44.f), fmaxf(self.sliderCircleImage.size.height, 44.f));
-        _sliderCircleLayer.contents = (__bridge id)self.sliderCircleImage.CGImage;
-        _sliderCircleLayer.contentsGravity = kCAGravityCenter;
+        _sliderCircleLayer.frame = CGRectMake(0.f, 0.f, fmaxf(self.sliderCircleImage.size.width, 44.f), fmaxf(self.sliderCircleImage.size.height, 44.f));
     } else {
         CGFloat sliderFrameSide = fmaxf(self.sliderCircleRadius * 2.f, 44.f);
         CGRect  sliderDrawRect  = CGRectMake((sliderFrameSide - sliderDiameter) / 2.f, (sliderFrameSide - sliderDiameter) / 2.f, sliderDiameter, sliderDiameter);
@@ -688,6 +687,15 @@ void withoutCAAnimation(withoutAnimationBlock code)
     return _trackLayer.trackColor;
 }
 
+- (void)setSliderCircleImage:(UIImage *)sliderCircleImage {
+    _sliderCircleImage = sliderCircleImage;
+    _sliderCircleLayer.contents = (__bridge id)sliderCircleImage.CGImage;
+}
+
+- (UIImage *)sliderCircleImage {
+    return _sliderCircleImage;
+}
+
 - (void)setTintColor:(UIColor *)tintColor
 {
     [super setTintColor:tintColor];
@@ -728,7 +736,6 @@ GENERATE_SETTER(trackTintEndColor, UIColor*, setTrackTintEndColor, );
 
 GENERATE_SETTER(sliderCircleRadius, CGFloat, setSliderCircleRadius, [self updateMaxRadius];);
 GENERATE_SETTER(sliderCircleColor, UIColor*, setSliderCircleColor, );
-GENERATE_SETTER(sliderCircleImage, UIImage*, setSliderCircleImage, );
 
 GENERATE_SETTER(labelFont, UIFont*, setLabelFont, [self removeLabelLayers];);
 GENERATE_SETTER(labelColor, UIColor*, setLabelColor, );
